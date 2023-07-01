@@ -30,9 +30,9 @@ pipeline {
         stage('Deliver') {
             agent any
             environment {
-                        VOLUME = '$(pwd)/sources:/src'
-                        IMAGE = 'cdrx/pyinstaller-linux:python2'
-                    }
+                VOLUME = 'sources:/src'
+                IMAGE = 'cdrx/pyinstaller-linux:python2'
+            }
             steps {
                 dir(path: env.BUILD_ID){
                     unstash 'compiled-sources'
@@ -41,8 +41,6 @@ pipeline {
             }
             post {
                 success {
-                    //This archiveArtifacts step archives the standalone executable file and exposes this file
-                    //through the Jenkins interface.
                     archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
                     sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
                 }
