@@ -1,8 +1,6 @@
 node {
-    def workspacePath = env.WORKSPACE
     stage('Build') {
         docker.image('python:2-alpine').inside {
-            sh "cp -r ${workspacePath}/sources ."
             sh 'python -m py_compile sources/add2vals.py sources/calc.py'
             stash(name: 'compiled-sources', includes: 'sources/*.py*')
         }
@@ -10,7 +8,6 @@ node {
 
     stage('Test') {
         docker.image('qnib/pytest').inside {
-            sh "cp -r ${workspacePath}/sources ."
             sh 'py.test --verbose --junit-xml test-reports/results.xml sources/test_calc.py'
         }
         junit 'test-reports/results.xml'
@@ -22,7 +19,6 @@ node {
         withEnv(["VOLUME=${volume}", "IMAGE=${image}"]) {
             dir(env.BUILD_ID) {
                 unstash 'compiled-sources'
-                sh "cp -r ${workspacePath}/sources ."
                 sh "docker run --rm -v ${volume} ${image} 'pyinstaller -F add2vals.py'"
             }
         }
