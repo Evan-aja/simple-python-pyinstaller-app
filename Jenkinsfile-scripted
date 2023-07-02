@@ -34,7 +34,7 @@ node {
                 sh "ls -lR ${env.BUILD_ID}"
                 archiveArtifacts artifacts: "${env.BUILD_ID}/sources/dist/add2vals", fingerprint: true
                 dir(env.BUILD_ID) {
-                    sh "docker run --rm -v ./sources:src ${image} 'rm -rf build dist'"
+                    sh "docker run --rm -v ./sources:/src ${image} 'rm -rf build dist'"
                 }
             }
         }
