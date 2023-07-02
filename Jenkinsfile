@@ -51,21 +51,37 @@ pipeline {
         stage('Publish') {
             agent any
             environment {
-                RELEASE_NAME = 'v1.0.0'
-                RELEASE_DESCRIPTION = 'Release description'
-                GITHUB_TOKEN = credentials('github-token-id')
-                GITHUB_URL = credentials('github-url-id')
+                GITHUB_REPO = credentials('github-url-id')
+                GITHUB_TOKEN = credentials('your-github-token-id')
+                
             }
             steps {
-                dir(path: env.BUILD_ID) {
-                    sh "git clone $GITHUB_URL"
-                    sh "cp -r sources/dist/add2vals simple-python-pyinstaller-app/"
-                    sh "cd simple-python-pyinstaller-app"
-                    sh "git tag $RELEASE_NAME"
-                    sh "git push --tags"
-                    sh "hub release create -a add2vals -m $RELEASE_DESCRIPTION $RELEASE_NAME"
+                script {
+                    def existingTags = sh(script: "git ls-remote --tags https://github.com/${env.GITHUB_REPO} | awk -F/ '{ print $3 }' | sort -Vr", returnStdout: true).trim()
+                    def latestTag = existingTags.tokenize('\n').first()
+                    def releaseName = getNextReleaseName(latestTag)
+
+                    dir(path: env.BUILD_ID) {
+                        sh "git clone ${env.GITHUB_REPO}"
+                        sh "cp -r sources/dist/add2vals ${env.GITHUB_REPO}/"
+                        sh "cd ${env.GITHUB_REPO}"
+                        sh "git tag ${releaseName}"
+                        sh "git push --tags"
+                        sh "hub release create -a add2vals -m ${releaseName} ${releaseName}"
+                    }
                 }
             }
         }
+    }
+}
+
+def getNextReleaseName(latestTag) {
+    if (latestTag) {
+        def versionParts = latestTag.tokenize('.')
+        int lastPart = versionParts.last().toInteger()
+        versionParts[versionParts.size() - 1] = (lastPart + 1).toString()
+        return versionParts.join('.')
+    } else {
+        return 'v1.0.0'
     }
 }
