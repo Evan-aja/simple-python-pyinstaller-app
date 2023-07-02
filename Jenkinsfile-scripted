@@ -28,7 +28,7 @@ node {
         } finally {
             if (successFlag) {
                 sh "ls -l"
-                sh "ls -l ${env.BUILD_ID}"
+                sh "ls -lR ${env.BUILD_ID}"
                 archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
                 sh "docker run --rm -v ${volume} ${image} 'rm -rf build dist'"
             }
