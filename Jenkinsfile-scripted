@@ -27,6 +27,7 @@ node {
             throw e
         } finally {
             if (successFlag) {
+                sh "ls -l"
                 archiveArtifacts "${env.BUILD_ID}/sources/dist/add2vals"
                 sh "docker run --rm -v ${volume} ${image} 'rm -rf build dist'"
             }
