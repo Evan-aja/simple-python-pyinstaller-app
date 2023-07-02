@@ -19,8 +19,13 @@ node {
         def successFlag = true
         try {
             dir(env.BUILD_ID) {
+                sh 'pwd'
+                sh 'ls -l'
+                sh "echo ${volume}"
                 unstash 'compiled-sources'
                 sh "docker run --rm -v ${volume} ${image} 'pyinstaller -F add2vals.py'"
+                sh 'ls -l'
+                sh 'pwd'
             }
         } catch (Exception e) {
             successFlag = false
