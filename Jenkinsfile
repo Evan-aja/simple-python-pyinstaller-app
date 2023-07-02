@@ -57,7 +57,7 @@ pipeline {
             }
             steps {
                 script {
-                    def existingTags = sh(script: "git ls-remote --tags https://github.com/${env.GITHUB_REPO} | awk -F/ '{ print $3 }' | sort -Vr", returnStdout: true).trim()
+                    def existingTags = sh(script: "git ls-remote --tags ${env.GITHUB_REPO} | awk -F/ '{ print $3 }' | sort -Vr", returnStdout: true).trim()
                     def latestTag = existingTags.tokenize('\n').first()
                     def releaseName = getNextReleaseName(latestTag)
 
