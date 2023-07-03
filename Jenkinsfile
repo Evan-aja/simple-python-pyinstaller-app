@@ -71,7 +71,7 @@ pipeline {
                     dir(path: env.BUILD_ID) {
                         sh "cp -r sources/dist/add2vals ."
                         
-                        def release = sh(script: "curl -XPOST -H 'Authorization:token ${env.GITHUB_TOKEN}' --data '{\"tag_name\": \"${RELEASE_NAME}\", \"target_commitish\": \"master\", \"name\": \"${env.GITHUB_REPO_FULL}\", \"body\": \"Description of the release\", \"draft\": false, \"prerelease\": true}' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
+                        def release = sh(script: "curl -XPOST -H 'Authorization:token ${env.GITHUB_TOKEN}' --data '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
 
                         def id = extractReleaseId(release)
                         
