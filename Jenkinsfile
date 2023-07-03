@@ -70,6 +70,8 @@ pipeline {
                     }
                     dir(path: env.BUILD_ID) {
                         sh "git clone https://github.com/${env.GITHUB_USERNAME}/${env.GITHUB_REPO}.git"
+                        sh "ls -R"
+                        sh "ls -lhR"
                         sh "cp -r sources/dist/add2vals ${env.GITHUB_REPO}/"
                         sh "cd ${env.GITHUB_REPO}"
                         sh "git config user.email \"${env.GIT_EMAIL}\""
