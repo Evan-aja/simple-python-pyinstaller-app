@@ -75,6 +75,8 @@ pipeline {
 
                         def id =  sh "echo ${release} | sed -n -e 's/"id":\ \([0-9]\+\),/\1/p' | head -n 1 | sed 's/[[:blank:]]//g'"
 
+                        sh "echo ${id}"
+
                         sh "curl -X POST -H \"Authorization: Bearer ${GITHUB_TOKEN}\" -H \"Content-Type: application/octet-stream\" --data-binary @add2vals https://uploads.github.com/repos/${env.GITHUB_REPO_FULL}/releases/${id}/assets?name=add2vals"
                     }
                 }
