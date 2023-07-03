@@ -69,16 +69,11 @@ pipeline {
                         RELEASE_NAME = getNextReleaseName(latestTag)
                     }
                     dir(path: env.BUILD_ID) {
-                        sh "git clone https://github.com/${env.GITHUB_REPO_FULL}.git"
-                        sh "ls -R"
-                        sh "cp -r sources/dist/add2vals ${env.GITHUB_REPO}/"
-                        sh "cd ${env.GITHUB_REPO}"
-                        sh "git config user.email \"${env.GIT_EMAIL}\""
-                        sh "git config user.name \"${env.GIT_USERNAME}\""
-                        sh "git tag -d \"${RELEASE_NAME}\""
-                        sh "git tag \"${RELEASE_NAME}\""
-                        sh "GIT_ASKPASS=true git push --tags https://${env.GIT_USERNAME}:${env.GITHUB_TOKEN}@github.com/${env.GITHUB_USERNAME}/${env.GITHUB_REPO}"
-                        sh "curl -sSL -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer ${env.GITHUB_TOKEN}\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases -d \"{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}\""
+                        sh "cp -r sources/dist/add2vals ."
+                        
+                        sh "curl -sSL -X POST -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases -d '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}'"
+
+                        sh "curl -X POST -H \"Authorization: Bearer ${GITHUB_TOKEN}\" -H \"Content-Type: application/octet-stream\" --data-binary @add2vals https://uploads.github.com/repos/${env.GITHUB_REPO_FULL}/releases/${RELEASE_NAME}/assets?name=add2vals"
                     }
                 }
             }
