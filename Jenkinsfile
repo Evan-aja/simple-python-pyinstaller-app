@@ -103,8 +103,7 @@ def getNextReleaseName(latestTag) {
 }
 
 def extractReleaseId(json) {
-    def slurper = new groovy.json.JsonSlurper()
-    def response = slurper.parseText(json)
+    def response = new groovy.json.JsonSlurper().parseText(json)
     def id = response.id
     return id.toString().trim()
 }
