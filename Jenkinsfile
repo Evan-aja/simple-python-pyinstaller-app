@@ -60,10 +60,7 @@ pipeline {
             }
             steps {
                 script {
-                    def existingRelease
-                    withCredentials([string(credentialsId: env.GITHUB_TOKEN, variable: 'GITHUB_TOKEN')]) {
-                        existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/releases", returnStdout: true).trim()
-                    }
+                    def existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_USERNAME}/${env.GITHUB_REPO}/releases", returnStdout: true).trim()
 
                     if (existingRelease) {
                         def latestTag = findLatestTag(existingRelease)
