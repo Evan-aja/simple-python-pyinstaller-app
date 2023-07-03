@@ -77,7 +77,7 @@ pipeline {
                         sh "git config user.name \"${env.GIT_USERNAME}\""
                         sh "git tag -d \"${RELEASE_NAME}\""
                         sh "git tag \"${RELEASE_NAME}\""
-                        sh "GIT_ASKPASS=true GIT_USERNAME=${env.GIT_USERNAME} GIT_PASSWORD=${env.GITHUB_TOKEN} git push --tags"
+                        sh "GIT_ASKPASS=true git push --tags https://${env.GIT_USERNAME}:${env.GIT_PASSWORD}@github.com/${env.GITHUB_USERNAME}/${env.GITHUB_REPO}"
                         sh "curl -sSL -X POST -H \"Accept: application/vnd.github+json\" -H \"Authorization: Bearer ${env.GITHUB_TOKEN}\" -H \"X-GitHub-Api-Version: 2022-11-28\" https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases -d \"{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}\""
                     }
                 }
