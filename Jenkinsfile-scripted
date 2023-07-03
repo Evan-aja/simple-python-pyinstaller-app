@@ -49,6 +49,7 @@ node {
             }
 
             dir(env.BUILD_ID) {
+                sh "ls -lhR"
                 sh "cp -r sources/dist/add2vals ."
 
                 def release = sh(script: "curl -XPOST -H 'Authorization:token ${GITHUB_TOKEN}' --data '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}' https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/releases", returnStdout: true).trim()
