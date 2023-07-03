@@ -34,36 +34,31 @@ node {
         }
     }
     stage('Publish') {
-        agent any
-        environment {
-            GITHUB_USERNAME = credentials('github-user-name')
-            GITHUB_REPO = credentials('github-repo-name')
-            GITHUB_REPO_FULL = "${GITHUB_USERNAME}/${GITHUB_REPO}"
-            GITHUB_TOKEN = credentials('github-token-id')
-            GIT_USERNAME = credentials('git-user-name')
-            GIT_EMAIL = credentials('git-user-email')
-            RELEASE_NAME = 'v1.0.0'
+        def GITHUB_USERNAME = credentials('github-user-name')
+        def GITHUB_REPO = credentials('github-repo-name')
+        def GITHUB_REPO_FULL = "${GITHUB_USERNAME}/${GITHUB_REPO}"
+        def GITHUB_TOKEN = credentials('github-token-id')
+        def GIT_USERNAME = credentials('git-user-name')
+        def GIT_EMAIL = credentials('git-user-email')
+        def RELEASE_NAME = 'v1.0.0'
+
+        def existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
+
+        if (existingRelease) {
+            def latestTag = findLatestTag(existingRelease)
+            RELEASE_NAME = getNextReleaseName(latestTag)
         }
-        steps {
-            script {
-                def existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
 
-                if (existingRelease) {
-                    def latestTag = findLatestTag(existingRelease)
-                    RELEASE_NAME = getNextReleaseName(latestTag)
-                }
-                dir(path: env.BUILD_ID) {
-                    sh "cp -r sources/dist/add2vals ."
-                    
-                    def release = sh(script: "curl -XPOST -H 'Authorization:token ${env.GITHUB_TOKEN}' --data '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
+        dir(env.BUILD_ID) {
+            sh "cp -r sources/dist/add2vals ."
 
-                    def id = extractReleaseId(release)
-                    
-                    sh "echo \"${id}\""
+            def release = sh(script: "curl -XPOST -H 'Authorization:token ${GITHUB_TOKEN}' --data '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}' https://api.github.com/repos/${GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
 
-                    sh "curl -X POST -H \"Authorization: Bearer ${GITHUB_TOKEN}\" -H \"Content-Type: application/octet-stream\" --data-binary @add2vals https://uploads.github.com/repos/${env.GITHUB_REPO_FULL}/releases/${id}/assets?name=add2vals"
-                }
-            }
+            def id = extractReleaseId(release)
+
+            sh "echo \"${id}\""
+
+            sh "curl -X POST -H \"Authorization: Bearer ${GITHUB_TOKEN}\" -H \"Content-Type: application/octet-stream\" --data-binary @add2vals https://uploads.github.com/repos/${GITHUB_REPO_FULL}/releases/${id}/assets?name=add2vals"
         }
     }
 }
