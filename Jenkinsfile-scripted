@@ -27,9 +27,7 @@ node {
         } finally {
             if (successFlag) {
                 archiveArtifacts artifacts: "${env.BUILD_ID}/sources/dist/add2vals", fingerprint: true
-                dir(env.BUILD_ID) {
-                    sh "docker run --rm -v ./sources:/src ${image} 'rm -rf build dist'"
-                }
+                sh "docker run --rm -v ./sources:/src ${image} 'rm -rf build dist'"
             }
         }
     }
