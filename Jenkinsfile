@@ -73,7 +73,7 @@ pipeline {
                         
                         def release = sh(script: "curl -XPOST -H 'Authorization:token ${env.GITHUB_TOKEN}' --data '{\"tag_name\": \"${RELEASE_NAME}\", \"target_commitish\": \"master\", \"name\": \"${env.GITHUB_REPO_FULL}\", \"body\": \"Description of the release\", \"draft\": false, \"prerelease\": true}' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
 
-                        def id = sh(script: "echo \"${release}\" | sed -n -e 's/\"id\":\\ \\([0-9]\\+\\),/\\1/p' | head -n 1 | sed 's/[[:blank:]]//g'", returnStdout: true).trim()
+                        def id = sh(script: "echo \"${release}\" | jq -r '.id'", returnStdout: true).trim()
 
                         sh "echo \"${id}\""
 
