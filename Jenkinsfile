@@ -71,7 +71,7 @@ pipeline {
                     dir(path: env.BUILD_ID) {
                         sh "cp -r sources/dist/add2vals ."
                         
-                        def release = sh "curl -sSL -X POST -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases -d '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}'"
+                        def release = sh "curl -X POST -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases -d '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}'"
 
                         def id = sh(script: "echo ${release} | sed -n -e 's/\"id\":\\ \\([0-9]\\+\\),/\\1/p' | head -n 1 | sed 's/[[:blank:]]//g'", returnStdout: true).trim()
 
