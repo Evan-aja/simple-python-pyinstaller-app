@@ -51,28 +51,34 @@ pipeline {
         stage('Publish') {
             agent any
             environment {
-                GITHUB_REPO = credentials('github-url-id')
-                GITHUB_TOKEN = credentials('your-github-token-id')
-                
+                GITHUB_REPO = credentials('github-owner-repo')
+                GITHUB_TOKEN = credentials('github-token-id')
+                RELEASE_NAME = 'v1.0.0'
             }
             steps {
                 script {
-                    def existingTags = sh(script: "git ls-remote --tags ${env.GITHUB_REPO} | awk -F/ '{ print \$3 }' | sort -Vr", returnStdout: true).trim()
-                    def latestTag = existingTags.tokenize('\n').first()
-                    def releaseName = getNextReleaseName(latestTag)
+                    def existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO}/releases", returnStdout: true).trim()
+
+                    if (existingRelease) {
+                        def latestTag = findLatestTag(existingRelease)
+                        RELEASE_NAME = getNextReleaseName(latestTag)
+                    }
 
                     dir(path: env.BUILD_ID) {
-                        sh "git clone ${env.GITHUB_REPO}"
-                        sh "cp -r sources/dist/add2vals ${env.GITHUB_REPO}/"
-                        sh "cd ${env.GITHUB_REPO}"
-                        sh "git tag ${releaseName}"
-                        sh "git push --tags"
-                        sh "hub release create -a add2vals -m ${releaseName} ${releaseName}"
+                        sh 'cp -r sources/dist/add2vals .'
+
+                        sh "curl -sSL -X POST -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO}/releases -d '{\"tag_name\":\"${RELEASE_NAME}\",\"target_commitish\":\"master\",\"name\":\"${RELEASE_NAME}\",\"body\":\"Description of the release\",\"draft\":false,\"prerelease\":false,\"generate_release_notes\":false}'"
                     }
                 }
             }
         }
     }
+}
+
+def findLatestTag(existingRelease) {
+    def releases = new groovy.json.JsonSlurper().parseText(existingRelease)
+    def latestTag = releases.find { release -> release.tag_name }?.tag_name
+    return latestTag ?: ''
 }
 
 def getNextReleaseName(latestTag) {
@@ -82,6 +88,6 @@ def getNextReleaseName(latestTag) {
         versionParts[versionParts.size() - 1] = (lastPart + 1).toString()
         return versionParts.join('.')
     } else {
-        return 'v1.0.0'
+        return RELEASE_NAME
     }
 }
