@@ -37,6 +37,7 @@ services:
       - 5000:5000
       - 2376:2376
     command: --storage-driver overlay2
+    restart: on-failure
 
   jenkins-blueocean:
     build:
@@ -54,22 +55,44 @@ services:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
     ports:
-      - 49000:49000
+      - 8080:8080
       - 50000:50000
     restart: on-failure
 
-  jenkins-nginx:
-    image: nginx
-    container_name: jenkins-nginx
+  jenkins-prometheus:
+    image: prom/prometheus
+    container_name: jenkins-prometheus
     ports:
-      - 9000:9000
+      - 9090:9090
     networks:
       - jenkins
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/jenkins.conf
-    depends_on:
-      - jenkins-blueocean
-    restart: always
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: on-failure
+
+  jenkins-grafana:
+    image: grafana/grafana
+    container_name: jenkins-grafana
+    environment:
+      - GF_SERVER_HTTP_PORT=3030
+    ports:
+      - 3030:3030
+    networks:
+      - jenkins
+    restart: on-failure
+
+#  jenkins-nginx:
+#    image: nginx
+#    container_name: jenkins-nginx
+#    ports:
+#      - 9000:9000
+#    networks:
+#      - jenkins
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/conf.d/jenkins.conf
+#    depends_on:
+#      - jenkins-blueocean
+#    restart: always
 
 networks:
   jenkins:
