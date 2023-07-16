@@ -61,14 +61,14 @@ pipeline {
             }
             steps {
                 script {
-                    def userInput = input(
-                        id: 'deployInput',
-                        message: 'Do you want to proceed with deploy?',
+                    def deployChoice = input(
+                        id: 'deployChoice',
+                        message: 'Do you want to deploy this release?',
                         parameters: [
-                            choice(choices: 'Yes\nNo', description: 'Choose whether to deploy or not')
+                            booleanParam(defaultValue: true, description: 'Deploy the release', name: 'DEPLOY')
                         ]
                     )
-                    if (userInput == 'Yes') {
+                    if (deployChoice) {
                         echo 'Deploying...'
                         def existingRelease = sh(script: "curl -sSL -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${env.GITHUB_TOKEN}' -H 'X-GitHub-Api-Version: 2022-11-28' https://api.github.com/repos/${env.GITHUB_REPO_FULL}/releases", returnStdout: true).trim()
 
