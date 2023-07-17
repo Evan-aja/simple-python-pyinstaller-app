@@ -59,7 +59,7 @@ pipeline {
                         @app.route('/execute', methods=['POST'])
                         def execute_endpoint():
                             data = request.get_json()
-                            binary_path = data.get('binary_path', '${env.BUILD_ID}/sources/dist/add2vals')
+                            binary_path = data.get('binary_path', "${env.BUILD_ID}/sources/dist/add2vals")
                             args = data.get('args', [])
 
                             stdout, stderr = execute_binary(binary_path, args)
