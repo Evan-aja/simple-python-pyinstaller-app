@@ -79,6 +79,8 @@ services:
       - 3031:3030
     networks:
       - jenkins
+    volumes:
+      - jenkins-grafana-storage:/var/lib/grafana
     restart: on-failure
 
 #  jenkins-nginx:
@@ -100,3 +102,4 @@ networks:
 volumes:
   jenkins-docker-certs:
   jenkins-data:
+  jenkins-grafana-storage:
