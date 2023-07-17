@@ -29,6 +29,6 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   - job_name: "jenkins"
-    metrics_path: /prometheus/
+    metrics_path: /prom/
     static_configs:
         - targets: ["jenkins-blueocean:8080"]

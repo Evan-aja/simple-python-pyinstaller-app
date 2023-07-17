@@ -63,7 +63,7 @@ services:
     image: prom/prometheus
     container_name: jenkins-prometheus
     ports:
-      - 9090:9090
+      - 9091:9090
     networks:
       - jenkins
     volumes:
@@ -76,7 +76,7 @@ services:
     environment:
       - GF_SERVER_HTTP_PORT=3030
     ports:
-      - 3030:3030
+      - 3031:3030
     networks:
       - jenkins
     restart: on-failure
