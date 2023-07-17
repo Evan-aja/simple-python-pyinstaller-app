@@ -40,7 +40,8 @@ pipeline {
                 dir(path: env.BUILD_ID){
                     unstash 'compiled-sources'
                     sh "docker run --rm -v ${VOLUME} ${IMAGE} 'pyinstaller -F add2vals.py'"
-                    sh "cat >> TEST.py << EOF
+                    script {
+                        def testScript = '''\
                         import subprocess
                         from flask import Flask, request, jsonify
 
@@ -55,24 +56,26 @@ pipeline {
                             except Exception as e:
                                 return None, str(e)
 
-                        @app.route(\'/execute\', methods=[\'POST\'])
+                        @app.route('/execute', methods=['POST'])
                         def execute_endpoint():
                             data = request.get_json()
-                            binary_path = data.get(\'binary_path\', \'${env.BUILD_ID}/sources/dist/add2vals\')
-                            args = data.get(\'args\', [])
+                            binary_path = data.get('binary_path', '${env.BUILD_ID}/sources/dist/add2vals')
+                            args = data.get('args', [])
 
                             stdout, stderr = execute_binary(binary_path, args)
 
                             if stdout:
-                                return jsonify({\'stdout\': stdout.decode(\'utf-8\')})
+                                return jsonify({'stdout': stdout.decode('utf-8')})
                             elif stderr:
-                                return jsonify({\'stderr\': stderr.decode(\'utf-8\')})
+                                return jsonify({'stderr': stderr.decode('utf-8')})
                             else:
-                                return jsonify({\'error\': \'Failed to execute the binary.\'})
+                                return jsonify({'error': 'Failed to execute the binary.'})
 
-                        if __name__ == \"__main__\":
-                            app.run(host=\'0.0.0.0\', port=12345)
-                        EOF"
+                        if __name__ == "__main__":
+                            app.run(host='0.0.0.0', port=12345)
+                        '''
+                        sh "echo '''${testScript}''' > TEST.py"
+                    }
                     sh "docker run --rm -v ${VOLUME} -p 12345:12345 ${TEST} 'pip install flask && python TEST.py &'"
                     input message: 'Finished testing the app? (Click "Proceed" to continue)'
                     sh "docker stop $(docker ps -q --filter ancestor=${TEST})"
