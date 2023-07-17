@@ -78,7 +78,7 @@ pipeline {
                     }
                     sh "docker run --rm -v ${VOLUME} -p 12345:12345 ${TEST} 'pip install flask && python TEST.py &'"
                     input message: 'Finished testing the app? (Click "Proceed" to continue)'
-                    sh "docker stop $(docker ps -q --filter ancestor=${TEST})"
+                    sh "docker stop $$(docker ps -q --filter ancestor=${TEST})"
                 }
             }
             post {
